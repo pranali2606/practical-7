@@ -26,239 +26,243 @@ class Book {
     }
 
     // Function to display details of a book
-    String displayDetails(int sNo, String bookName, String authorName, int bookQty, int bookQtyCopy) {
-        this.sNo = sNo;
-        this.bookName = bookName;
-        this.authorName = authorName;
-        this.bookQty = bookQty;
-        this.bookQtyCopy = bookQtyCopy;
-
+    String displayDetails() {
         return sNo + "\t" + bookName + "\t" + authorName + "\t" + bookQty + "\t" + bookQtyCopy + "\n";
     }
 
-    // toString method to print the details of a book
+    // toString method to print book and its author whenever we try to print object
     @Override
     public String toString() {
         return "Book - " + bookName + " by - " + authorName;
     }
 }
 
- class LibraryManagementSystem {
+class LibraryManagementSystem {
 
-    Scanner sc = new Scanner(System.in);
-    Book theBooks[] = new Book[50];
-    
-    public static int count_of_books;
+	static final int MAX = 50;
 
-    // Function to compare books
-	public int compareBookObjects(Book b1, Book b2) {
+	static Book[] theBooks = new Book[MAX];
 
-		// If the book name or serial number matches
+	static int count_of_book = 0;
+
+	static Scanner sc = new Scanner(System.in);
+
+	// Function to compare books
+	public static boolean compareBookObjects(Book b1, Book b2) {
+
+		// If book name or serial number matches
 		if (b1.bookName.equalsIgnoreCase(b2.bookName) || b1.sNo == b2.sNo) {
-			System.out.println("Book with this Name or Serial No Already Exists.");
-			return 0;
+			System.out.println("Book with this Name or Serial Number Already Exists.");
+			return true;
 		}
-		return 1;
+		return false;
 	}
 
-    // Function to add books to the library
-    public void addBook(Book book) {
+	// Function to add books to the library
+	public static void addBook(Book book) {
 
-        if (count_of_books < 50) {
-            this.theBooks[count_of_books] = book;
-            count_of_books++;
-            System.out.println("Added Book: " + book);
-        } else {
-            System.out.println("No Space to Add More Books.");
-        }
+		if (count_of_book < MAX) {
+			boolean bookExists = false;
+			for (int i = 0; i < count_of_book; i++) {
+				if (compareBookObjects(theBooks[i], book)) {
+					bookExists = true;
+					break;
+				}
+			}
+
+			if (!bookExists) {
+				theBooks[count_of_book] = book;
+				count_of_book++;
+				System.out.println("Added Book: " + book);
+			}
+		} else {
+			System.out.println("No Space to Add More Books.");
+		}
     }
-
-    // Function to show available books in the library
-    void showAvailableBooks() {
+    
+    // Function to show how many and which books are available in the library
+    public static void showAvailableBooks() {
         System.out.println("Available Books are: ");
-        System.out.println("S.No\t\tName\t\tAuthor\t\tAvailable Qty\t\tTotal Qty");
-        for (int i = 0; i < count_of_books; i++) {
-            System.out.println(theBooks[i].sNo + "\t\t" + theBooks[i].bookName + "\t\t" + theBooks[i].authorName
-                    + "\t\t" + theBooks[i].bookQtyCopy + "\t\t" + theBooks[i].bookQty);
+        System.out.println("S.No\tName\tAuthor\tAvailable Qty\tTotal Qty");
+        for (int i = 0; i < count_of_book; i++) {
+            System.out.println(theBooks[i].displayDetails());
         }
     }
 
-    // Function to upgrade the quantity of a book using serial number
-    public void upgradeBookQty() {
+    // Function to upgrade the number of books available using serial number
+    public static void upgradeBookQty() {
 
         System.out.println("UPGRADE QUANTITY OF A BOOK\n");
         System.out.println("Enter Serial No of Book");
 
         int serial = sc.nextInt();
-        
-        boolean found = false;
-
-        for (int i = 0; i < count_of_books; i++) {
+        for (int i = 0; i < count_of_book; i++) {
             if (serial == theBooks[i].sNo) {
 
                 System.out.println("Enter No of Books to be Added:");
                 int addingQty = sc.nextInt();
                 theBooks[i].bookQty += addingQty;
                 theBooks[i].bookQtyCopy += addingQty;
-                
-                found = true;
+
+                return;
+            }
+        }
+
+        System.out.println("No Book with Serial No " + serial + " Found.");
+    }
+
+    // Function to search the book by its serial number or name
+    public static void search() {
+        System.out.println("SEARCH BOOK");
+        System.out.println("1. Search by Serial Number");
+        System.out.println("2. Search by Book Name");
+        int choice = sc.nextInt();
+        sc.nextLine();
+
+        switch (choice) {
+            case 1:
+                System.out.println("SEARCH BY SERIAL NUMBER\n");
+                System.out.println("Enter Serial No of Book:");
+                int sNo = sc.nextInt();
+                boolean foundBySerial = false;
+                for (int i = 0; i < count_of_book; i++) {
+                    if (sNo == theBooks[i].sNo) {
+                        System.out.println(theBooks[i].displayDetails());
+                        foundBySerial = true;
+                        break;
+                    }
+                }
+                if (!foundBySerial) {
+                    System.out.println("No Book with Serial No " + sNo + " Found.");
+                }
+                break;
+
+            case 2:
+                System.out.println("SEARCH BY BOOK NAME\n");
+                sc.nextLine();
+                System.out.println("Enter Book Name:");
+                String bookName = sc.nextLine();
+                boolean foundByName = false;
+                for (int i = 0; i < count_of_book; i++) {
+                    if (bookName.equalsIgnoreCase(theBooks[i].bookName)) {
+                        System.out.println(theBooks[i].displayDetails());
+                        foundByName = true;
+                    }
+                }
+                if (!foundByName) {
+                    System.out.println("No Books with name \"" + bookName + "\" Found.");
+				}
+				break;
+
+			default:
+				System.out.println("Invalid choice!");
+				break;
+		}
+	}
+
+	// Function to issue a book to a student
+	public static void issueBook() {
+		System.out.println("ISSUE BOOK");
+		System.out.println("Enter Serial No of Book to be Issued:");
+		int sNo = sc.nextInt();
+		sc.nextLine();
+
+		boolean bookFound = false;
+		for (int i = 0; i < count_of_book; i++) {
+			if (sNo == theBooks[i].sNo) {
+				if (theBooks[i].bookQtyCopy > 0) {
+					theBooks[i].bookQtyCopy--;
+					System.out.println("Book " + theBooks[i].bookName + " has been issued.");
+					bookFound = true;
+				} else {
+					System.out.println("Book is not available for issue.");
+				}
+				break;
+			}
+		}
+
+		if (!bookFound) {
+			System.out.println("No Book with Serial No " + sNo + " Found.");
+		}
+    }
+    
+    // Function to return a book
+	public static void returnBook() {
+        System.out.println("RETURN BOOK");
+        System.out.println("Enter Serial No of Book to be Returned:");
+        int sNo = sc.nextInt();
+        sc.nextLine();
+
+        boolean bookFound = false;
+        for (int i = 0; i < count_of_book; i++) {
+            if (sNo == theBooks[i].sNo) {
+                theBooks[i].bookQtyCopy++;
+                System.out.println("Book " + theBooks[i].bookName + " has been returned.");
+                bookFound = true;
                 break;
             }
         }
 
-        if (!found) {
-            System.out.println("No Book with Serial No " + serial + " Found.");
+        if (!bookFound) {
+            System.out.println("No Book with Serial No " + sNo + " Found.");
         }
     }
 
-    // Function to search a book by its serial number or name
-    public void search() {
-        int choice;
+	public static void main(String[] args) {
 
-        System.out.println("If you want to search by book name, enter 1. If you want to search by serial number, enter 0: ");
-        choice = sc.nextInt();
+		int choice;
 
-        if (choice == 0) {
-            System.out.println("SEARCH BY SERIAL NUMBER\n");
-            System.out.println("Enter Serial No of Book:");
-            int sNo = sc.nextInt();
-            
-            boolean found = false;
+		do {
 
-            for (int i = 0; i < count_of_books; i++) {
-                if (sNo == theBooks[i].sNo) {
-                    System.out.println(theBooks[i].sNo + "\t\t" + theBooks[i].bookName + "\t\t" + theBooks[i].authorName
-                            + "\t\t" + theBooks[i].bookQtyCopy + "\t\t" + theBooks[i].bookQty);
-                    found = true;
+			System.out.println("LIBRARY MANAGEMENT SYSTEM");
+			System.out.println("1. Add new Book");
+			System.out.println("2. Upgrade Quantity of a Book");
+			System.out.println("3. Search a Book");
+			System.out.println("4. Show All Books");
+			System.out.println("5. Issue a Book");
+			System.out.println("6. Return a Book");
+			System.out.println("0. Exit Application");
+
+			choice = sc.nextInt();
+			sc.nextLine();
+
+			switch (choice) {
+				case 1:
+					Book book = new Book();
+					addBook(book);
+					break;
+
+				case 2:
+					upgradeBookQty();
+					break;
+
+				case 3:
+					search();
+					break;
+
+				case 4:
+					showAvailableBooks();
+					break;
+
+				case 5:
+					issueBook();
+					break;
+
+				case 6:
+                    returnBook();
                     break;
-                }
-            }
-
-            if (!found) {
-                System.out.println("No Book with Serial No " + sNo + " Found.");
-            }
-        } else if (choice == 1) {
-            sc.nextLine();
-            
-            System.out.println("SEARCH BY BOOK NAME");
-            System.out.println("Enter book Name:");
-            
-            String bookName = sc.nextLine();
-            
-            boolean found = false;
-
-            for (int i = 0; i < count_of_books; i++) {
-                if (bookName.equalsIgnoreCase(theBooks[i].bookName)) {
-                    System.out.println(theBooks[i].sNo + "\t\t" + theBooks[i].bookName + "\t\t" + theBooks[i].authorName
-                            + "\t\t" + theBooks[i].bookQtyCopy + "\t\t" + theBooks[i].bookQty);
-                    found = true;
-                }
-            }
-
-            if (!found) {
-                System.out.println("No Books with name " + bookName + " Found.");
-            }
-        } else {
-            System.out.println("Invalid choice. Please enter either 0 or 1.");
-        }
-    }
-
-    // To check if a book is available in the library
-    public int isAvailable(int sNo) {
-
-        for (int i = 0; i < count_of_books; i++) {
-            if (sNo == theBooks[i].sNo) {
-                if (theBooks[i].bookQtyCopy > 0) {
-                    System.out.println("Book is Available.");
-                    return i;
-                }
-                System.out.println("Book is Unavailable");
-                return -1;
-            }
-        }
-
-        System.out.println("No Book with Serial Number " + sNo + " Available in Library.");
-        return -1;
-    }
-
-    // To remove a book from the library
-    public Book checkOut() {
-
-        System.out.println("Enter Serial No of Book to be Checked Out:");
-        int sNo = sc.nextInt();
-        
-        int bookIndex = isAvailable(sNo);
-
-        if (bookIndex != -1) {
-            theBooks[bookIndex].bookQtyCopy--;
-            return theBooks[bookIndex];
-        }
-
-        return null;
-    }
-
-    // To add a book back to the library
-    public void checkIn(Book b) {
-
-        for (int i = 0; i < count_of_books; i++) {
-            if (b.equals(theBooks[i])) {
-                theBooks[i].bookQtyCopy++;
-                return;
-            }
-        }
-    }
-
-    // Displaying menu
-    public void displayMenu() {
-        System.out.println(
-                "----------------------------------------------------------------------------------------------------------");
-        System.out.println("Press 1 to Add a new Book.");
-        System.out.println("Press 0 to Exit Application.");
-        System.out.println("Press 2 to Upgrade Quantity of a Book.");
-        System.out.println("Press 3 to Search a Book.");
-        System.out.println("Press 4 to Show All Books.");
-        System.out.println(
-                "-------------------------------------------------------------------------------------------------------");
-    }
-
-    public static void main(String[] args) {
-
-        Scanner input = new Scanner(System.in);
-
-        // Creating object of LibraryManagementSystem class
-        LibraryManagementSystem library = new LibraryManagementSystem();
-
-        int choice;
-
-        // Creating menu using do-while loop
-        do {
-            library.displayMenu();
-            choice = input.nextInt();
-
-            // Switch case
-            switch (choice) {
-
-                case 1:
-                    Book book = new Book();
-                    library.addBook(book);
-                    break;
-
-                case 2:
-                    library.upgradeBookQty();
-                    break;
-
-                case 3:
-                    library.search();
-                    break;
-
-                case 4:
-                    library.showAvailableBooks();
+                    
+                case 0:
+                    System.out.println("Exiting the application...");
                     break;
 
                 default:
-                	System.out.println("ENTER BETWEEN 0 TO 5.");
-               }
-          }while (choice != 0);
-              }
-     }
-   
+                    System.out.println("Invalid choice!");
+                    break;
+            }
+
+        } while (choice != 0);
+
+        sc.close();
+    }
+}
